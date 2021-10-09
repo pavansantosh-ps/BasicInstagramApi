@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -21,7 +22,8 @@ func Posts(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		postID := r.URL.Path[len("/posts/"):]
 		postsCollection := DB.Collection("posts")
-		result := postsCollection.FindOne(context.TODO(), bson.M{"postid": postID})
+		objID, _ := primitive.ObjectIDFromHex(postID)
+		result := postsCollection.FindOne(context.TODO(), bson.M{"_id": objID})
 		post := &models.Post{}
 		err := result.Decode(post)
 		if err != nil {
@@ -42,6 +44,7 @@ func Posts(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		p.Timestamp = time.Now()
+		p.Postid = primitive.NewObjectID()
 		postsCollection := DB.Collection("posts")
 		insertResult, err := postsCollection.InsertOne(context.TODO(), p)
 		if err != nil {
@@ -49,7 +52,7 @@ func Posts(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(fmt.Sprintf(`{"id": "%s"}`, p.Postid)))
+		w.Write([]byte(fmt.Sprintf(`{"postid": "%s"}`, p.Postid.Hex())))
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"message": "not posts"}`))
@@ -66,11 +69,15 @@ func GetUserPosts(w http.ResponseWriter, r *http.Request) {
 		skip := int64(0)
 		limit := int64(5)
 		page, err := strconv.Atoi(r.URL.Query().Get("page"))
+		if err != nil {
+			page = 1
+		}
 		size, err := strconv.Atoi(r.URL.Query().Get("size"))
-
+		if err != nil {
+			size = 5
+		}
 		fmt.Print(page)
 		fmt.Print(size)
-
 		if page <= 0 {
 			page = 1
 		}

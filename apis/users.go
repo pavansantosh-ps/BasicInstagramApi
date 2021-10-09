@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func Users(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +19,8 @@ func Users(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		userId := r.URL.Path[len("/users/"):]
 		usersCollection := DB.Collection("users")
-		result := usersCollection.FindOne(context.TODO(), bson.M{"id": userId})
+		objID, _ := primitive.ObjectIDFromHex(userId)
+		result := usersCollection.FindOne(context.TODO(), bson.M{"_id": objID})
 		user := &models.User{}
 		err := result.Decode(user)
 		if err != nil {
@@ -42,6 +44,7 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
+		u.Id = primitive.NewObjectID()
 		usersCollection := DB.Collection("users")
 		insertResult, err := usersCollection.InsertOne(context.TODO(), u)
 		if err != nil {
@@ -49,7 +52,7 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(fmt.Sprintf(`{"id": "%s"}`, u.Id)))
+		w.Write([]byte(fmt.Sprintf(`{"id": "%s"}`, u.Id.Hex())))
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"message": "not found"}`))
