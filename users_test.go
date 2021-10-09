@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestUserData(t *testing.T) {
+func TestCreatseUserData(t *testing.T) {
 
 	t.Run("Inserts a single document", func(t *testing.T) {
 		var user = []byte(`{"name":"santosh","email":"santosh@gmail.com","password":"bchsbchba"}`)

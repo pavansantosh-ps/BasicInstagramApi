@@ -76,8 +76,6 @@ func GetUserPosts(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			size = 5
 		}
-		fmt.Print(page)
-		fmt.Print(size)
 		if page <= 0 {
 			page = 1
 		}

@@ -1,36 +1,63 @@
 package main
 
-// func TestCreatePostData(t *testing.T) {
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"internship/instragram/apis"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
-// 	t.Run("Inserts a single document", func(t *testing.T) {
-// 		var user = []byte(`{
-// 			"postid": "51",
-// 			"userid": "23",
-// 			"caption": "pavan",
-// 			"imageurl": "/15/3456/home"
-// 		}`)
-// 		request, _ := http.NewRequest(http.MethodPost, "/posts/", bytes.NewBuffer(user))
-// 		request.Header.Set("Content-Type", "application/json")
-// 		response := httptest.NewRecorder()
-// 		apis.Posts(response, request)
-// 		got := response.Body.String()
-// 		want := `{"postid": "51"}`
+func TestCreatePostData(t *testing.T) {
 
-// 		if got != want {
-// 			t.Errorf("got %q, want %q", got, want)
-// 		}
-// 	})
-// }
+	t.Run("Inserts a single post", func(t *testing.T) {
+		var user = []byte(`{
+			"userid": "61616cfe46c8143bf86d96f3",
+			"caption": "pavan",
+			"imageurl": "https:/google.com"
+		}`)
+		request, _ := http.NewRequest(http.MethodPost, "/posts/", bytes.NewBuffer(user))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		apis.Posts(response, request)
 
-// func TestGetPostData(t *testing.T) {
-// 	t.Run("returns user data by id", func(t *testing.T) {
-// 		request, _ := http.NewRequest(http.MethodGet, "/posts/", nil)
-// 		response := httptest.NewRecorder()
-// 		apis.Posts(response, request)
-// 		got := response.Body.String()
-// 		want := `{"postid": "51","userid": "23","caption": "pavan","imageurl": "/15/3456/home","timestamp": "2021-10-09T08:53:44.519Z"}`
-// 		if got != want {
-// 			t.Errorf("got %q, want %q", got, want)
-// 		}
-// 	})
-// }
+		if response.Code >= 400 {
+			t.Errorf("resp %q", response.Code)
+		}
+	})
+}
+
+func TestGetPostData(t *testing.T) {
+	t.Run("Creates a post and checks if the post exists", func(t *testing.T) {
+		var post = []byte(`{
+			"userid": "61616cfe46c8143bf86d96f3",
+			"caption": "pavan",
+			"imageurl": "https:/google.com"
+		}`)
+		req, _ := http.NewRequest(http.MethodPost, "/posts/", bytes.NewBuffer(post))
+		req.Header.Set("Content-Type", "application/json")
+		res := httptest.NewRecorder()
+		apis.Posts(res, req)
+		postResp := res.Body.String()
+		var respMap map[string]string
+		err := json.Unmarshal([]byte(postResp), &respMap)
+		if err != nil {
+			t.Errorf("error parsing the resp %q", postResp)
+		}
+		postID := respMap["postid"]
+		request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/posts/%s", postID), nil)
+		response := httptest.NewRecorder()
+		apis.Posts(response, request)
+		got := response.Body.String()
+		var gotMap map[string]string
+		err = json.Unmarshal([]byte(got), &gotMap)
+		if err != nil {
+			t.Errorf("error parsing the resp %q", postResp)
+		}
+		if gotMap["id"] != postID || gotMap["userid"] != "61616cfe46c8143bf86d96f3" || gotMap["caption"] != "pavan" || gotMap["imageurl"] != "https:/google.com" {
+			t.Errorf("got name:'%s' email:'%s', want name: santosh email: santosh@gmail.com", gotMap["name"], gotMap["email"])
+		}
+	})
+}
