@@ -20,10 +20,11 @@ func Posts(w http.ResponseWriter, r *http.Request) {
 	DB := helper.ConnectDB()
 	switch r.Method {
 	case "GET":
+		//returns the post based on the postid provided in the URL
 		postID := r.URL.Path[len("/posts/"):]
 		postsCollection := DB.Collection("posts")
 		objID, _ := primitive.ObjectIDFromHex(postID)
-		result := postsCollection.FindOne(context.TODO(), bson.M{"_id": objID})
+		result := postsCollection.FindOne(context.TODO(), bson.M{"_id": objID}) //queries the post collection from mongodb by postid
 		post := &models.Post{}
 		err := result.Decode(post)
 		if err != nil {
@@ -37,6 +38,7 @@ func Posts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write(b)
 	case "POST":
+		//Creates a post document based on the given payload
 		decoder := json.NewDecoder(r.Body)
 		var p models.Post
 		err := decoder.Decode(&p)
@@ -46,7 +48,7 @@ func Posts(w http.ResponseWriter, r *http.Request) {
 		p.Timestamp = time.Now()
 		p.Postid = primitive.NewObjectID()
 		postsCollection := DB.Collection("posts")
-		insertResult, err := postsCollection.InsertOne(context.TODO(), p)
+		insertResult, err := postsCollection.InsertOne(context.TODO(), p) //inserts the payload into mongodb posts collection
 		if err != nil {
 			panic(err)
 		}
@@ -64,15 +66,16 @@ func GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	DB := helper.ConnectDB()
 	switch r.Method {
 	case "GET":
+		//returns the posts based on the userid provided in the URL
 		userId := r.URL.Path[len("/posts/users/"):]
 		postsCollection := DB.Collection("posts")
 		skip := int64(0)
 		limit := int64(5)
-		page, err := strconv.Atoi(r.URL.Query().Get("page"))
+		page, err := strconv.Atoi(r.URL.Query().Get("page")) //Getting the page number parem from the URL
 		if err != nil {
 			page = 1
 		}
-		size, err := strconv.Atoi(r.URL.Query().Get("size"))
+		size, err := strconv.Atoi(r.URL.Query().Get("size")) //Getting the LIMITE parem from the URL
 		if err != nil {
 			size = 5
 		}
@@ -88,16 +91,16 @@ func GetUserPosts(w http.ResponseWriter, r *http.Request) {
 		opts := options.FindOptions{}
 		opts.Skip = &skip
 		opts.Limit = &limit
-		curser, err := postsCollection.Find(context.TODO(), bson.M{"userid": userId}, &opts)
+		curser, err := postsCollection.Find(context.TODO(), bson.M{"userid": userId}, &opts) //queries the post collection from mongodb by userid and returns the curser value
 
 		var posts []*models.Post
 
 		if err != nil {
 			panic(err)
 		}
-		for curser.Next(context.TODO()) {
+		for curser.Next(context.TODO()) { //traverses all the query documents
 			var result models.Post
-			err := curser.Decode(&result)
+			err := curser.Decode(&result) //parses all the documents
 			if err != nil {
 				panic(err)
 			}

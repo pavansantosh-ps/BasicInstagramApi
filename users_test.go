@@ -11,9 +11,12 @@ import (
 )
 
 func TestCreatseUserData(t *testing.T) {
-
+	//Testing POST method by creating a user by making an http request
 	t.Run("Inserts a single document", func(t *testing.T) {
-		var user = []byte(`{"name":"santosh","email":"santosh@gmail.com","password":"bchsbchba"}`)
+		var user = []byte(`{
+			"name":"santosh",
+			"email":"santosh@gmail.com",
+			"password":"bchsbchba"}`)
 		request, _ := http.NewRequest(http.MethodPost, "/users/", bytes.NewBuffer(user))
 		request.Header.Set("Content-Type", "application/json")
 		response := httptest.NewRecorder()
@@ -26,9 +29,12 @@ func TestCreatseUserData(t *testing.T) {
 }
 
 func TestGetUserData(t *testing.T) {
+	//Testing Get method by creating a user by making http request and checking if the user exists in the posts document
 	t.Run("Creates a user and checks if the user exists", func(t *testing.T) {
-
-		var user = []byte(`{"name":"santosh","email":"santosh@gmail.com","password":"bchsbchba"}`)
+		var user = []byte(`{
+			"name":"santosh",
+			"email":"santosh@gmail.com",
+			"password":"bchsbchba"}`)
 		req, _ := http.NewRequest(http.MethodPost, "/users/", bytes.NewBuffer(user))
 		req.Header.Set("Content-Type", "application/json")
 		res := httptest.NewRecorder()

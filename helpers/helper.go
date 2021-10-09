@@ -15,6 +15,7 @@ func HashPassword(password string) (string, error) {
 }
 
 func ConnectDB() *mongo.Database {
+	//creates a connection to mongodb hosted in mongodb://localhost:27017 and returns the client
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		panic(err)

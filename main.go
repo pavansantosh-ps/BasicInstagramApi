@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	//Adds all the server handlers
 	http.HandleFunc("/users/", apis.Users)
 	http.HandleFunc("/posts/users/", apis.GetUserPosts)
 	http.HandleFunc("/posts/", apis.Posts)

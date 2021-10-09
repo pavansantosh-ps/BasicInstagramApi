@@ -11,7 +11,7 @@ import (
 )
 
 func TestCreatePostData(t *testing.T) {
-
+	//Testing POST method by creating a post by making an http request
 	t.Run("Inserts a single post", func(t *testing.T) {
 		var user = []byte(`{
 			"userid": "61616cfe46c8143bf86d96f3",
@@ -30,6 +30,7 @@ func TestCreatePostData(t *testing.T) {
 }
 
 func TestGetPostData(t *testing.T) {
+	//Testing Get method by creating a post by making http request and checking if the post exists in the posts document
 	t.Run("Creates a post and checks if the post exists", func(t *testing.T) {
 		var post = []byte(`{
 			"userid": "61616cfe46c8143bf86d96f3",
