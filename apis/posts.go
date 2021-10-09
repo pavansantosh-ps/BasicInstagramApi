@@ -7,9 +7,11 @@ import (
 	helper "internship/instragram/helpers"
 	"internship/instragram/models"
 	"net/http"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func Posts(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +63,28 @@ func GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		userId := r.URL.Path[len("/posts/users/"):]
 		postsCollection := DB.Collection("posts")
-		curser, err := postsCollection.Find(context.TODO(), bson.M{"userid": userId})
+		skip := int64(0)
+		limit := int64(5)
+		page, err := strconv.Atoi(r.URL.Query().Get("page"))
+		size, err := strconv.Atoi(r.URL.Query().Get("size"))
+
+		fmt.Print(page)
+		fmt.Print(size)
+
+		if page <= 0 {
+			page = 1
+		}
+		if size <= 0 {
+			size = 5
+		}
+		skip = int64((page - 1) * size)
+		limit = int64(size)
+
+		opts := options.FindOptions{}
+		opts.Skip = &skip
+		opts.Limit = &limit
+		curser, err := postsCollection.Find(context.TODO(), bson.M{"userid": userId}, &opts)
+
 		var posts []*models.Post
 
 		if err != nil {
